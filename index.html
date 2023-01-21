@@ -259,6 +259,286 @@ mjx-container[display="true"] + br {
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/21/Pytorch3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/21/Pytorch3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD/" class="post-title-link" itemprop="url">Pytorch3-反向传播</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-21 09:53:45 / 修改时间：10:39:31" itemprop="dateCreated datePublished" datetime="2023-01-21T09:53:45+08:00">2023-01-21</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>​        在线性模型中，</p>
+<script type="math/tex; mode=display">
+y^=ωx</script><p>如果</p>
+<p>以神经网络的视角带入来看，则x为输入层，即input层，\omegaω<strong>权重</strong>y^\widehat yy<strong>输出层</strong>。在神经网络中，通常将权重以及乘法计算操作的部分合并看做一个神经元（层）。而神经网络的训练过程即为更新权重的过程，其更新的情况依赖于∂loss∂ω\frac{\partial loss}{\partial \omega}∂ω∂loss,而并非∂y^∂ω\frac{\partial \widehat y}{\partial \omega}∂ω∂y</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/20/Nilearn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/20/Nilearn/" class="post-title-link" itemprop="url">Nilearn</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-20 10:55:48" itemprop="dateCreated datePublished" datetime="2023-01-20T10:55:48+08:00">2023-01-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-01-21 09:44:03" itemprop="dateModified" datetime="2023-01-21T09:44:03+08:00">2023-01-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Nilearn-库介绍"><a href="#Nilearn-库介绍" class="headerlink" title="Nilearn 库介绍"></a>Nilearn 库介绍</h1><p>​        Nilearn 是一个将机器学习、模式识别、多变量分析等技术应用于神经影像数据的应用中，能完成多体素模式分析、解码、模型预测、构造功能连接、脑区分割、构造连接体等功能。一般用于处理功能磁共振图像（fMRI）、静息状态，或者基于体素的形态学分析。Nilearn的价值体现在特定领域特定工程的构造，将神经影像数据表达为非常合适于统计学习的特征矩阵。</p>
+<h1 id="从fMRI数据到时间序列"><a href="#从fMRI数据到时间序列" class="headerlink" title="从fMRI数据到时间序列"></a>从fMRI数据到时间序列</h1><p>​        fMRI数据是4维的，包含三维的空间序列和一维的时间，在实际应用中，更多的是利用大脑图像时间序列做研究，无法直接使用fMRI数据做相关研究，需要对原始数据做一些数据预处理和变换。</p>
+<h2 id="mask"><a href="#mask" class="headerlink" title="mask"></a>mask</h2><p>​        第一步所做的都是把四维的fMRI数据转换为二维矩阵，这个过程称为mask，就是提取能利用的特征，通过mask得到的二维矩阵包含一维的时间和一维的特征，将fMRI数据中每一个时间片上的特征提取出来，组在一起就是一个二维矩阵。</p>
+<p><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101112809234.png">https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101112809234.png</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/18/Principles%20of%20fMRI%201/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/18/Principles%20of%20fMRI%201/" class="post-title-link" itemprop="url">Principles of fMRI 1</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-18 08:46:57" itemprop="dateCreated datePublished" datetime="2023-01-18T08:46:57+08:00">2023-01-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-01-20 09:39:45" itemprop="dateModified" datetime="2023-01-20T09:39:45+08:00">2023-01-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="fMRI简介及数据介绍"><a href="#fMRI简介及数据介绍" class="headerlink" title="fMRI简介及数据介绍"></a>fMRI简介及数据介绍</h1><p>​        功能性磁共振成像（fMRI）：可以探测到大脑结构和动态变化，是一种非入侵技术没有副作用，在被试者完成任务时测量一系列的大脑图像，然后单个图片的测量信号的变化被用来推断任务-相关的脑活动，fMRI在一段时间内多次测量大脑某块区域。</p>
+<p>​        每个大脑区域有大约100000个不同的体素，体素是三维空间内的小立方体，是fMRI分析的基石。每一个体素都有一个数字代表强度和空间位置与之对应。在连续的时间观察这个体素，就可以看到这个体素的活动强度随时间的变化，提取出关于时间的活动强度信息，关联任务或者被试的活动。通常情况下这些信号代表血氧依赖水平，测量血红蛋白与脱氧血红蛋白的比例与该组织的新陈代谢速度，间接反映神经元活动。</p>
+<p>​        血流响应函数HRF，代表神经活动触发的fMRI响应。</p>
+<p>​        fMRI数据分析的目标：大脑活动的mapping，决定在进行特定任务时大脑什么部位会被激活，同时处理好噪声问题。通过连接强度或者大脑活动来推测个人的感知、行为和健康状况。</p>
+<h1 id="fRMI数据结构"><a href="#fRMI数据结构" class="headerlink" title="fRMI数据结构"></a>fRMI数据结构</h1><pre><code>    ## 时间分辨率与空间分布率、结构图像与功能图像
+</code></pre><p>​        时间分辨率TR：由扫描一张图片所需的时间决定即参数TR决定的，决定了区分观察不同时间点上大脑变化的能力。</p>
+<p>​        空间分辨率：决定了区分不同区域微小变化的能力（图片是否清晰）。</p>
+<p>​        在磁场等条件一样时，fMRI扫描出的图像的时间分辨率越高/低，对应的空间分辨率就越低/高，很多时候需要根据不同的情况在两者之间找到一个平衡点。</p>
+<p>​        结构图像：有着极高的空间分辨率，可以通过它区分不停的组织，而时间分辨率及其低，事实上就是一个静态的图像。</p>
+<p>​        功能图像：时间分辨率相对很高，通过它可以研究不同的时间段大脑发生了什么变化，空间分辨率较低。</p>
+<p>​        大脑扫面常用的方向：冠状面、矢状面、水平面。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101224341062.png" alt="20170101224341062"></p>
+<p>​        通常来说MRI是按照水平扫描的。FOV（Filed of View）是指扫描的一块空间区域，一般只讲某一层面的视野没有第三维。</p>
+<p>​        切片厚度是指一层切片的厚度，同时一层图像在扫面时会被分成很多体素，比如一层图像被分成64×64个体素，所以它的分割尺寸Matrix Size是64×64。每一个时刻每个体素都会对应一个自己的值。</p>
+<h2 id="图像K空间"><a href="#图像K空间" class="headerlink" title="图像K空间"></a>图像K空间</h2><p>​        K空间的数据分布实际上是图像空间中数据的二维傅立叶变换结果，傅里叶变换实际上是将信号分解为不同频率、不同振幅的正弦波的过程。K空间中的数据点和图像空间中的数据点并不是一一对应的。一个K空间中的数据点对应了图像空间中所有数据点的一部分信息。</p>
+<h2 id="信号与血流"><a href="#信号与血流" class="headerlink" title="信号与血流"></a>信号与血流</h2><p>​        MRI往往用于研究大脑的具体功能，扫出来的是功能图像，也叫做T2*权重图像，空间分辨率比较低但时间分辨率很高，可以在很短的时间内扫出一叠功能图像。fMRI实验中用到的是BOLD比例指数，BOLD指数指的是有氧血红蛋白的含量和脱氧血红蛋白含量的比值，并没有直接测量神经元的活动，是根据神经元在兴奋时所消耗的氧气量来衡量大脑活动的。有氧血红蛋白是反磁性（Diamagnetic）的，脱氧血红蛋白是顺磁性（Paramagnetic）的，这两种不同状态下的蛋白一起作用产生了局部磁场。</p>
+<p>​        神经元兴奋时，血流量增加，脱氧血红蛋白含量下降，于是T2*信号随之上升，通过这个变化推断出神经元的活动。</p>
+<h2 id="噪声"><a href="#噪声" class="headerlink" title="噪声"></a>噪声</h2><p>​        <a target="_blank" rel="noopener" href="https://blog.csdn.net/jinxiaonian11/article/details/54171864">参考</a></p>
+<p>​        宏观神经网络：是指大脑和多个系统的模式，其空间从1cm左右到100cm左右。</p>
+<p>​        功能映射地图：是指像躯体感觉这样相对粗糙的大脑区域，大约是一个大脑组织的几毫米，包含在一个体素中。</p>
+<p>​        功能柱：指执行不同功能的columns。</p>
+<p>​        以上三种范围内的信息可以用BOLD fMRI技术来获取。</p>
+<h2 id="fMRI数据预处理"><a href="#fMRI数据预处理" class="headerlink" title="fMRI数据预处理"></a>fMRI数据预处理</h2><p>​        刚采集的原始图像数据会经过一系列的预处理步骤，主要是分辨去除伪影以及检验一些模型所需的假设是否成立。</p>
+<p>​        尽量减少因为数据采集和生理学特性导致的误差，检验模型的统计假设做一些变换让数据符合这些假设，将不同的个体数据的脑区位置标准化以便进行组间分析，组间分析才具有较好的效度和灵敏度。</p>
+<p>​        预处理步骤包括：可视化、去伪影、时间配准、头动校正、生理噪音校正、结构功能配准、标准化和时空间滤波。</p>
+<h3 id="可视化去伪影"><a href="#可视化去伪影" class="headerlink" title="可视化去伪影"></a>可视化去伪影</h3><p>​        预处理的第一步，有些时候数据会出现一些异常陡峭的峰波或者是缓慢的偏倚，主成分分析法PCA可以用来探测这些异常的峰波。</p>
+<h3 id="时间配准"><a href="#时间配准" class="headerlink" title="时间配准"></a>时间配准</h3><p>​        在扫描一次完整大脑（Brain volume）的周期（TR，Repetition time）内，会扫好几片脑片（Slice），由于一个时间点只能扫描一张脑片，如果是按照顺序一张一张扫下去的话，每张脑片之间的扫面时间点都会有区别。比如最顶端的脑片的扫描时间会相对低端的脑片延迟2s，需要做时间回归。通过插值等方法来获得三个脑片相同时间点的数据，通过与未知点相邻的已知点的信号值来预测未知点的值，通常有线性函数和三角函数。</p>
+<h3 id="头动校正"><a href="#头动校正" class="headerlink" title="头动校正"></a>头动校正</h3><p>​        通常使用刚性变换把所有的图像中的脑都固定在同一个靶位置，一个刚体变换包含6个自由度，即关于X、Y、Z轴三个方向的平移以及围绕这三个轴的旋转。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/17/%E5%9F%BA%E4%BA%8E%E5%9B%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84BWDSP%E6%8C%87%E4%BB%A4%E9%80%89%E6%8B%A9%E6%96%B9%E6%B3%95%E4%BC%98%E5%8C%96%E7%A0%94%E7%A9%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/17/%E5%9F%BA%E4%BA%8E%E5%9B%BE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84BWDSP%E6%8C%87%E4%BB%A4%E9%80%89%E6%8B%A9%E6%96%B9%E6%B3%95%E4%BC%98%E5%8C%96%E7%A0%94%E7%A9%B6/" class="post-title-link" itemprop="url">基于图神经网络的BWDSP指令选择方法优化研究-论文阅读2</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-17 08:55:52 / 修改时间：08:56:28" itemprop="dateCreated datePublished" datetime="2023-01-17T08:55:52+08:00">2023-01-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/14/Pytorch2-%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -620,7 +900,7 @@ $\frac{\partial loss_n}{\partial \omega} = 2 x_n(x_n \omega - y_n)$</script><p>�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
