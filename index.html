@@ -259,6 +259,96 @@ mjx-container[display="true"] + br {
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/23/Pytorch4-%E5%9F%BA%E4%BA%8EPytorch%E7%9A%84%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/23/Pytorch4-%E5%9F%BA%E4%BA%8EPytorch%E7%9A%84%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">Pytorch4-基于Pytorch的线性模型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-01-23 14:05:44 / 修改时间：20:00:51" itemprop="dateCreated datePublished" datetime="2023-01-23T14:05:44+08:00">2023-01-23</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="利用pytorch进行深度学习"><a href="#利用pytorch进行深度学习" class="headerlink" title="利用pytorch进行深度学习"></a>利用pytorch进行深度学习</h1><ul>
+<li>准备数据集</li>
+<li>设计用于计算最终结果的模型</li>
+<li>构造损失函数及优化器</li>
+<li>设计循环周期Training cycle——==前馈、反馈、更新==</li>
+</ul>
+<p>​        x,y^^^∈R，在pytorch中，若使用mini-batch的算法，一次性求出一个批量的y^^^，则需要x以及y^^^作为矩阵参与计算，此时利用其广播机制，可以将原标量参数ω扩写为同维的矩阵[ω]，参与运算而不改变其Tensor的性质，对于矩阵，行表示样本，列表示特征。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="comment">#数据作为矩阵参与Tensor计算</span></span><br><span class="line">x_data = torch.Tensor([<span class="number">1.0</span>],[<span class="number">2.0</span>],[<span class="number">3.0</span>])</span><br><span class="line">y_data = torch.Tensor([<span class="number">2.0</span>],[<span class="number">4.0</span>],[<span class="number">6.0</span>])</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>​        ω以及b是需要反复训练确定的，在设计时，需要率先设计出此二者的维度。只要确定了y^^^以及x的维度，就可以确定ω以及b的维度大小。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123192843.png"></p>
+<p>​        由于前边的计算过程都是针对矩阵的，因此最后的loss也是矩阵，但由于进行反向传播调整参数，因此loss应当是个标量，因此要对矩阵[loss]内每个量求和均值(MSE)</p>
+<script type="math/tex; mode=display">
+loss = \frac{1}{N}\Sigma
+\begin{bmatrix}
+{loss_1}\\
+{\vdots}\\
+{loss_n}\\
+\end{bmatrix}</script><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#固定继承于Module</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LinearModel</span>(torch.nn.Module):</span><br><span class="line">    <span class="comment">#构造函数初始化</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="comment">#调用父类的init</span></span><br><span class="line">        <span class="built_in">super</span>(LinearModel, self).__init__()</span><br><span class="line">        <span class="comment">#Linear对象包括weight(w)以及bias(b)两个成员张量</span></span><br><span class="line">        self.linear = torch.nn.Linear(<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#前馈函数forward，对父类函数中的overwrite</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment">#调用linear中的call()，以利用父类forward()计算wx+b</span></span><br><span class="line">        y_pred = self.linear(x)</span><br><span class="line">        <span class="keyword">return</span> y_pred</span><br><span class="line">    <span class="comment">#反馈函数backward由module自动根据计算图生成</span></span><br><span class="line">model = LinearModel()</span><br></pre></td></tr></table></figure>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123195256.png"></p>
+<h1 id="构造loss和optimizer"><a href="#构造loss和optimizer" class="headerlink" title="构造loss和optimizer"></a>构造loss和optimizer</h1><h2 id="loss计算"><a href="#loss计算" class="headerlink" title="loss计算"></a>loss计算</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">criterion = torch.nn.MSELoss(size_average=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<p>​        其中MSELoss也是继承于nn.Modules的。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123195512.png"></p>
+<h2 id="optimizer计算"><a href="#optimizer计算" class="headerlink" title="optimizer计算"></a>optimizer计算</h2><p>​        优化器并不构建计算图，生产的优化器对象可以直接对整个模型进行优化</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#model.parameters()用于检查模型中所能进行优化的张量</span></span><br><span class="line"><span class="comment">#learningrate(lr)表学习率，可以统一也可以不统一</span></span><br><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=<span class="number">0.01</span>)</span><br></pre></td></tr></table></figure>
+<h1 id="模型训练"><a href="#模型训练" class="headerlink" title="模型训练"></a>模型训练</h1><ol>
+<li>前馈计算预测值与损失函数</li>
+<li>梯度清零并进行backward</li>
+<li>更新参数</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    <span class="comment">#前馈计算y_pred</span></span><br><span class="line">    y_pred = model(x_data)</span><br><span class="line">    <span class="comment">#前馈计算损失loss</span></span><br><span class="line">    loss = criterion(y_pred,y_data)</span><br><span class="line">    <span class="comment">#打印调用loss时，会自动调用内部__str__()函数，避免产生计算图</span></span><br><span class="line">    <span class="built_in">print</span>(epoch,loss)</span><br><span class="line">    <span class="comment">#梯度清零</span></span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    <span class="comment">#梯度反向传播，计算图清除</span></span><br><span class="line">    loss.backward()</span><br><span class="line">    <span class="comment">#根据传播的梯度以及学习率更新参数</span></span><br><span class="line">    optimizer.step()</span><br></pre></td></tr></table></figure>
+<h2 id="测试模型"><a href="#测试模型" class="headerlink" title="测试模型"></a>测试模型</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">#Output</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">'w = '</span>, model.linear.weight.item())</span><br><span class="line"><span class="built_in">print</span>(<span class="string">'b = '</span>, model.linear.bias.item())</span><br><span class="line"></span><br><span class="line"><span class="comment">#TestModel</span></span><br><span class="line">x_test = torch.Tensor([[<span class="number">4.0</span>]])</span><br><span class="line">y_test = model(x_test)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">'y_pred = '</span>,y_test.data)</span><br></pre></td></tr></table></figure>
+<h1 id="整体代码"><a href="#整体代码" class="headerlink" title="整体代码"></a>整体代码</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="comment">#数据作为矩阵参与Tensor计算</span></span><br><span class="line">x_data = torch.Tensor([[<span class="number">1.0</span>],[<span class="number">2.0</span>],[<span class="number">3.0</span>]])</span><br><span class="line">y_data = torch.Tensor([[<span class="number">2.0</span>],[<span class="number">4.0</span>],[<span class="number">6.0</span>]])</span><br><span class="line"></span><br><span class="line"><span class="comment">#固定继承于Module</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LinearModel</span>(torch.nn.Module):</span><br><span class="line">    <span class="comment">#构造函数初始化</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="comment">#调用父类的init</span></span><br><span class="line">        <span class="built_in">super</span>(LinearModel, self).__init__()</span><br><span class="line">        <span class="comment">#Linear对象包括weight(w)以及bias(b)两个成员张量</span></span><br><span class="line">        self.linear = torch.nn.Linear(<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#前馈函数forward，对父类函数中的overwrite</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment">#调用linear中的call()，以利用父类forward()计算wx+b</span></span><br><span class="line">        y_pred = self.linear(x)</span><br><span class="line">        <span class="keyword">return</span> y_pred</span><br><span class="line">    <span class="comment">#反馈函数backward由module自动根据计算图生成</span></span><br><span class="line">model = LinearModel()</span><br><span class="line"></span><br><span class="line"><span class="comment">#构造的criterion对象所接受的参数为（y',y）</span></span><br><span class="line">criterion = torch.nn.MSELoss(size_average=<span class="literal">False</span>)</span><br><span class="line"><span class="comment">#model.parameters()用于检查模型中所能进行优化的张量</span></span><br><span class="line"><span class="comment">#learningrate(lr)表学习率，可以统一也可以不统一</span></span><br><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=<span class="number">0.01</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>):</span><br><span class="line">    <span class="comment">#前馈计算y_pred</span></span><br><span class="line">    y_pred = model(x_data)</span><br><span class="line">    <span class="comment">#前馈计算损失loss</span></span><br><span class="line">    loss = criterion(y_pred,y_data)</span><br><span class="line">    <span class="comment">#打印调用loss时，会自动调用内部__str__()函数，避免产生计算图</span></span><br><span class="line">    <span class="built_in">print</span>(epoch,loss)</span><br><span class="line">    <span class="comment">#梯度清零</span></span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    <span class="comment">#梯度反向传播，计算图清除</span></span><br><span class="line">    loss.backward()</span><br><span class="line">    <span class="comment">#根据传播的梯度以及学习率更新参数</span></span><br><span class="line">    optimizer.step()</span><br><span class="line"></span><br><span class="line"> <span class="comment">#Output</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">'w = '</span>, model.linear.weight.item())</span><br><span class="line"><span class="built_in">print</span>(<span class="string">'b = '</span>, model.linear.bias.item())</span><br><span class="line"></span><br><span class="line"><span class="comment">#TestModel</span></span><br><span class="line">x_test = torch.Tensor([[<span class="number">4.0</span>]])</span><br><span class="line">y_test = model(x_test)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">'y_pred = '</span>,y_test.data)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/21/Pytorch3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -284,7 +374,7 @@ mjx-container[display="true"] + br {
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-01-21 09:53:45 / 修改时间：10:39:31" itemprop="dateCreated datePublished" datetime="2023-01-21T09:53:45+08:00">2023-01-21</time>
+              <time title="创建时间：2023-01-21 09:53:45 / 修改时间：11:50:07" itemprop="dateCreated datePublished" datetime="2023-01-21T09:53:45+08:00">2023-01-21</time>
             </span>
 
           
@@ -300,8 +390,76 @@ mjx-container[display="true"] + br {
       
           <p>​        在线性模型中，</p>
 <script type="math/tex; mode=display">
-y^=ωx</script><p>如果</p>
-<p>以神经网络的视角带入来看，则x为输入层，即input层，\omegaω<strong>权重</strong>y^\widehat yy<strong>输出层</strong>。在神经网络中，通常将权重以及乘法计算操作的部分合并看做一个神经元（层）。而神经网络的训练过程即为更新权重的过程，其更新的情况依赖于∂loss∂ω\frac{\partial loss}{\partial \omega}∂ω∂loss,而并非∂y^∂ω\frac{\partial \widehat y}{\partial \omega}∂ω∂y</p>
+\widehat y = \omega x</script><p>如果</p>
+<p>以神经网络的视角带入来看，则x为输入层，即input层，ω为<strong>权重</strong>。在神经网络中，通常将权重以及乘法计算操作的部分合并看做一个神经元（层）。而神经网络的训练过程即为更新权重的过程，其更新的情况依赖于</p>
+<script type="math/tex; mode=display">
+\frac{\partial loss}{\partial \omega}</script><p>,而并非</p>
+<script type="math/tex; mode=display">
+\frac{\partial \widehat y}{\partial \omega}</script><p>​        神经网络视角下的线性模型：</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121104631.png"></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">符号</th>
+<th style="text-align:center">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">x~i~</td>
+<td style="text-align:center">输入层的第i个结点</td>
+</tr>
+<tr>
+<td style="text-align:center">h~ij~</td>
+<td style="text-align:center">第i层隐含层的第j个结点</td>
+</tr>
+<tr>
+<td style="text-align:center">o~i~</td>
+<td style="text-align:center">输出层的第i个结点</td>
+</tr>
+<tr>
+<td style="text-align:center">ω~x1~^mn^</td>
+<td style="text-align:center">输入层的第m个结点与隐含层的第n个结点之间的权重</td>
+</tr>
+<tr>
+<td style="text-align:center">ω~ij~^mn^</td>
+<td style="text-align:center">隐含层第i层的第m个结点与第j层的第n个结点之间的权重</td>
+</tr>
+<tr>
+<td style="text-align:center">ω~ko~^mn^</td>
+<td style="text-align:center">隐含层最后一层（第k层）的第m个结点与输出层第n个结点之间的权重</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121110246.png"></p>
+<p>​        上图中，输入层与隐藏层第一层之间有5×6=30个权重，而隐藏层第一层和隐藏层第二层之间由6×7=42个权重</p>
+<h2 id="计算图中的神经网络"><a href="#计算图中的神经网络" class="headerlink" title="计算图中的神经网络"></a>计算图中的神经网络</h2><p>​        在计算图中，绿色的模块为计算模块，可以在计算过程中求导。MM为矩阵乘法，ADD为加法。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121111341.png"></p>
+<p>对于上图左式，可以化简得到如下公式：</p>
+<script type="math/tex; mode=display">
+\widehat y = W_2(W_1X+b_1)+b_2=W_2W_1X+(W_2b_1+b_2)=WX+b</script><p>也就是说，在这个结构下单纯的增加层数，并不能怎加神经网络的复杂程度，因为</p>
+<p>最后都可以化简为一个单一的神经网络。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121112009.png"></p>
+<h2 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h2><p>​        在每层网结构中，增加一个非线性的==变换函数即激活函数==</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121112314.png"></p>
+<h1 id="反向传播过程"><a href="#反向传播过程" class="headerlink" title="反向传播过程"></a>反向传播过程</h1><h2 id="前馈计算"><a href="#前馈计算" class="headerlink" title="前馈计算"></a>前馈计算</h2><p>​        在某一处神经元，输入的x与ω经过函数f(x,ω)的计算，可以获得输出值z，并继续向前以得到损失值loss。在f(x,ω)的计算模块中会计算导数</p>
+<script type="math/tex; mode=display">
+\frac{\partial z}{\partial x}和\frac{\partial z}{\partial \omega}</script><p>并将其保存下来，在pytorch中，这样的值保存在变量x以及ω中。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121113244.png"></p>
+<h2 id="反向传播"><a href="#反向传播" class="headerlink" title="反向传播"></a>反向传播</h2><p>​        由于求导的链式法则，求得loss以后，前面的神经元会将</p>
+<script type="math/tex; mode=display">
+\frac{\partial loss}{\partial z}</script><p>的值反向传播给原先的神经元，在计算单元f(x,ω)中，将得到的</p>
+<script type="math/tex; mode=display">
+\frac{\partial loss}{\partial x}</script><p>与之前存储的导数相乘，即可得到损失值对于权重以及输入层的导数，即</p>
+<script type="math/tex; mode=display">
+\frac{\partial loss}{\partial x}和\frac{\partial loss}{\partial \omega}</script><p>基于该梯度才进行权重的调整。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121114218.png"></p>
+<h1 id="Pytorch中的前馈与反馈"><a href="#Pytorch中的前馈与反馈" class="headerlink" title="Pytorch中的前馈与反馈"></a>Pytorch中的前馈与反馈</h1><p>​        利用Pytorch框架进行深度学习，最主要的是==构建计算图==</p>
+<h2 id="Tensor张量"><a href="#Tensor张量" class="headerlink" title="Tensor张量"></a>Tensor张量</h2><p>​        Tensor中重要的两个成员，data用于保存权重本身的值ω，grad用于保存损失函数对权重的导数，grad本身也是个张量。对张量进行的计算操作，都是建立计算图的过程。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230121114718.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">x_data = [<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>]</span><br><span class="line">y_data = [<span class="number">2.0</span>, <span class="number">4.0</span>, <span class="number">6.0</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">#赋予tensor中的data</span></span><br><span class="line">w = torch.Tensor([<span class="number">1.0</span>])</span><br><span class="line"><span class="comment">#设定需要计算梯度grad</span></span><br><span class="line">w.requires_grad = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#模型y=x*w 建立计算图</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="string">'''</span></span><br><span class="line"><span class="string">    w为Tensor类型</span></span><br><span class="line"><span class="string">    x强制转换为Tensor类型</span></span><br><span class="line"><span class="string">    通过这样的方式建立计算图</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    <span class="keyword">return</span> x * w</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">loss</span>(<span class="params">x, y</span>):</span><br><span class="line">    y_pred = forward(x)</span><br><span class="line">    <span class="keyword">return</span> (y_pred - y) ** <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> (<span class="string">"predict  (before training)"</span>, <span class="number">4</span>, forward(<span class="number">4</span>).item())</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    <span class="keyword">for</span> x,y <span class="keyword">in</span> <span class="built_in">zip</span>(x_data,y_data):</span><br><span class="line">        <span class="comment">#创建新的计算图</span></span><br><span class="line">        l = loss(x,y)</span><br><span class="line">        <span class="comment">#进行反馈计算，此时才开始求梯度，此后计算图进行释放</span></span><br><span class="line">        l.backward()</span><br><span class="line">        <span class="comment">#grad.item()取grad中的值变成标量</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">'\tgrad:'</span>,x, y, w.grad.item())</span><br><span class="line">        <span class="comment">#单纯的数值计算要利用data，而不能用张量，否则会在内部创建新的计算图</span></span><br><span class="line">        w.data = w.data - <span class="number">0.01</span> * w.grad.data</span><br><span class="line">        <span class="comment">#把权重梯度里的数据清零</span></span><br><span class="line">        w.grad.data.zero_()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"progress:"</span>,epoch, l.item())</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"predict (after training)"</span>, <span class="number">4</span>, forward(<span class="number">4</span>).item())</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -352,7 +510,7 @@ y^=ωx</script><p>如果</p>
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-01-21 09:44:03" itemprop="dateModified" datetime="2023-01-21T09:44:03+08:00">2023-01-21</time>
+                <time title="修改时间：2023-01-21 10:48:29" itemprop="dateModified" datetime="2023-01-21T10:48:29+08:00">2023-01-21</time>
               </span>
 
           
@@ -369,7 +527,7 @@ y^=ωx</script><p>如果</p>
           <h1 id="Nilearn-库介绍"><a href="#Nilearn-库介绍" class="headerlink" title="Nilearn 库介绍"></a>Nilearn 库介绍</h1><p>​        Nilearn 是一个将机器学习、模式识别、多变量分析等技术应用于神经影像数据的应用中，能完成多体素模式分析、解码、模型预测、构造功能连接、脑区分割、构造连接体等功能。一般用于处理功能磁共振图像（fMRI）、静息状态，或者基于体素的形态学分析。Nilearn的价值体现在特定领域特定工程的构造，将神经影像数据表达为非常合适于统计学习的特征矩阵。</p>
 <h1 id="从fMRI数据到时间序列"><a href="#从fMRI数据到时间序列" class="headerlink" title="从fMRI数据到时间序列"></a>从fMRI数据到时间序列</h1><p>​        fMRI数据是4维的，包含三维的空间序列和一维的时间，在实际应用中，更多的是利用大脑图像时间序列做研究，无法直接使用fMRI数据做相关研究，需要对原始数据做一些数据预处理和变换。</p>
 <h2 id="mask"><a href="#mask" class="headerlink" title="mask"></a>mask</h2><p>​        第一步所做的都是把四维的fMRI数据转换为二维矩阵，这个过程称为mask，就是提取能利用的特征，通过mask得到的二维矩阵包含一维的时间和一维的特征，将fMRI数据中每一个时间片上的特征提取出来，组在一起就是一个二维矩阵。</p>
-<p><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101112809234.png">https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101112809234.png</a></p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20170101112809234.png"/></p>
 
       
     </div>
@@ -900,7 +1058,7 @@ $\frac{\partial loss_n}{\partial \omega} = 2 x_n(x_n \omega - y_n)$</script><p>�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
