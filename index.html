@@ -259,6 +259,94 @@ mjx-container[display="true"] + br {
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/23/Pytorch5-%E5%88%86%E7%B1%BB%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="yi-yi1">
+      <meta itemprop="description" content="种一棵树最好的时间是现在">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="不就熬个夜">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/01/23/Pytorch5-%E5%88%86%E7%B1%BB%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Pytorch5-分类问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-23 20:39:58" itemprop="dateCreated datePublished" datetime="2023-01-23T20:39:58+08:00">2023-01-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-01-24 16:14:10" itemprop="dateModified" datetime="2023-01-24T16:14:10+08:00">2023-01-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>​        分类问题中，实际上是对概率的计算与比较，而非类别之间的数值比较。</p>
+<h1 id="逻辑回归"><a href="#逻辑回归" class="headerlink" title="逻辑回归"></a>逻辑回归</h1><h2 id="二分类问题"><a href="#二分类问题" class="headerlink" title="二分类问题"></a>二分类问题</h2><p>​        二分类问题是非0即1的问题，由于隐藏条件的限制，有：</p>
+<script type="math/tex; mode=display">
+P(\widehat y=1)+P(\widehat y=0) = 1</script><p>对于二分类问题结果的预测，仅需要计算在0或1的条件下即可得到答案，通常计算1的概率。</p>
+<h2 id="逻辑函数"><a href="#逻辑函数" class="headerlink" title="逻辑函数"></a>逻辑函数</h2><p>​        在原先的回归问题中，所用的模型为</p>
+<script type="math/tex; mode=display">
+\widehat y = \omega x+b</script><p>此时$\widehat y \in R$，但当问题为分类问题时，所求结果的值域应当发生变化，变为一个即$\widehat y \in [0,1]$，因此需要引入逻辑函数(sigmod)来实现。</p>
+<script type="math/tex; mode=display">
+\sigma(x) = \frac{1}{1+e^{-x}}</script><p>本函数原名为logistics函数，属于sigmoid类函数，由于其特性优异，代码中sigmoid函数就指的是本函数，图像为</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123205841.png"/></p>
+<p>特点：</p>
+<ol>
+<li>函数值在0到1之间变化明显，即导数大</li>
+<li>在趋于0和1处函数逐渐平滑，即导数小</li>
+<li>函数为饱和函数</li>
+<li>单调函数</li>
+</ol>
+<p>除此之外，还有其他类的sigmoid函数。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123211101.png"/></p>
+<h2 id="模型变换"><a href="#模型变换" class="headerlink" title="模型变换"></a>模型变换</h2><p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230124160921.png"/></p>
+<h3 id="Loss变化"><a href="#Loss变化" class="headerlink" title="Loss变化"></a>Loss变化</h3><p>​        原先是计算两个标量数值间的差距，也就是数轴上的距离。计算两个概率之间的差异，需要利用到交叉熵的理论。</p>
+<p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230124161037.png"/></p>
+<p>​        如下图所示，$\widehat y$与y越接近，BCE Loss越小</p>
+<h2 id="整体代码"><a href="#整体代码" class="headerlink" title="整体代码"></a>整体代码</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">x_data = torch.Tensor([[<span class="number">1.0</span>],[<span class="number">2.0</span>],[<span class="number">3.0</span>]])</span><br><span class="line">y_data = torch.Tensor([[<span class="number">0.0</span>],[<span class="number">0.0</span>],[<span class="number">1.0</span>]])</span><br><span class="line"></span><br><span class="line"><span class="comment">#改用LogisticRegressionModel 同样继承于Module</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LogisticRegressionModel</span>(torch.nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>(LogisticRegressionModel, self).__init__()</span><br><span class="line">        self.linear = torch.nn.Linear(<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        <span class="comment">#对原先的linear结果进行sigmod激活</span></span><br><span class="line">        y_pred = F.sigmoid(self.linear(x))</span><br><span class="line">        <span class="keyword">return</span> y_pred</span><br><span class="line">model = LogisticRegressionModel()</span><br><span class="line"></span><br><span class="line"><span class="comment">#构造的criterion对象所接受的参数为（y&#x27;,y） 改用BCE</span></span><br><span class="line">criterion = torch.nn.BCELoss(size_average=<span class="literal">False</span>)</span><br><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=<span class="number">0.01</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1000</span>):</span><br><span class="line">    y_pred = model(x_data)</span><br><span class="line">    loss = criterion(y_pred,y_data)</span><br><span class="line">    <span class="built_in">print</span>(epoch,loss)</span><br><span class="line">    optimizer.zero_grad()</span><br><span class="line">    loss.backward()</span><br><span class="line">    optimizer.step()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;w = &#x27;</span>, model.linear.weight.item())</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;b = &#x27;</span>, model.linear.bias.item())</span><br><span class="line"></span><br><span class="line">x_test = torch.Tensor([[<span class="number">4.0</span>]])</span><br><span class="line">y_test = model(x_test)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;y_pred = &#x27;</span>,y_test.data)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/01/23/Pytorch4-%E5%9F%BA%E4%BA%8EPytorch%E7%9A%84%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -284,7 +372,7 @@ mjx-container[display="true"] + br {
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-01-23 14:05:44 / 修改时间：20:00:51" itemprop="dateCreated datePublished" datetime="2023-01-23T14:05:44+08:00">2023-01-23</time>
+              <time title="创建时间：2023-01-23 14:05:44 / 修改时间：20:42:19" itemprop="dateCreated datePublished" datetime="2023-01-23T14:05:44+08:00">2023-01-23</time>
             </span>
 
           
@@ -304,9 +392,9 @@ mjx-container[display="true"] + br {
 <li>构造损失函数及优化器</li>
 <li>设计循环周期Training cycle——==前馈、反馈、更新==</li>
 </ul>
-<p>​        x,y^^^∈R，在pytorch中，若使用mini-batch的算法，一次性求出一个批量的y^^^，则需要x以及y^^^作为矩阵参与计算，此时利用其广播机制，可以将原标量参数ω扩写为同维的矩阵[ω]，参与运算而不改变其Tensor的性质，对于矩阵，行表示样本，列表示特征。</p>
+<p>​        x,y∈R，在pytorch中，若使用mini-batch的算法，一次性求出一个批量的y，则需要x以及y作为矩阵参与计算，此时利用其广播机制，可以将原标量参数ω扩写为同维的矩阵[ω]，参与运算而不改变其Tensor的性质，对于矩阵，行表示样本，列表示特征。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="comment">#数据作为矩阵参与Tensor计算</span></span><br><span class="line">x_data = torch.Tensor([<span class="number">1.0</span>],[<span class="number">2.0</span>],[<span class="number">3.0</span>])</span><br><span class="line">y_data = torch.Tensor([<span class="number">2.0</span>],[<span class="number">4.0</span>],[<span class="number">6.0</span>])</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>​        ω以及b是需要反复训练确定的，在设计时，需要率先设计出此二者的维度。只要确定了y^^^以及x的维度，就可以确定ω以及b的维度大小。</p>
+<p>​        ω以及b是需要反复训练确定的，在设计时，需要率先设计出此二者的维度。只要确定了y以及x的维度，就可以确定ω以及b的维度大小。</p>
 <p><img src="https://raw.githubusercontent.com/yi-yi1/blogImage/main/20230123192843.png"></p>
 <p>​        由于前边的计算过程都是针对矩阵的，因此最后的loss也是矩阵，但由于进行反向传播调整参数，因此loss应当是个标量，因此要对矩阵[loss]内每个量求和均值(MSE)</p>
 <script type="math/tex; mode=display">
@@ -1058,7 +1146,7 @@ $\frac{\partial loss_n}{\partial \omega} = 2 x_n(x_n \omega - y_n)$</script><p>�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
